@@ -49,6 +49,7 @@ const Cart = () => {
     const getTotalPrice = () => {
         return items.reduce((total, item) => total + item.price * item.quantity, 0);
     };
+    
 
     const renderItem = ({ item }) => (
         <View style={styles.cartItem}>

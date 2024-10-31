@@ -7,22 +7,22 @@ import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Login from "../screen/Login";
-import Register from "../screen/Register";
-import Home from "../screen/Home";
-import ProductDetail from "../screen/ProductDetail";
-import Cart from './../screen/Cart';
-import Profile from './../screen/Profile';
-import OrderDetail from './../screen/OrderDetail';
-import OrderHistory from './../screen/OrderHistory';
-import EditProfile from './../screen/EditProfile';
-import ChangePassword from './../screen/ChangePassword';
-import ManageProduct from './../screen/ManageProduct';
-import EditProduct from './../screen/EditProduct';
-import ForgotPassword from './../screen/ForgotPassword';
-import Admin from './../screen/Admin';
-import AddProduct from './../screen/AddProduct';
-const NavFn = () => {
+import Login from "./screen/Login";
+import Register from "./screen/Register";
+import Home from "./screen/Home";
+import ProductDetail from "./screen/ProductDetail";
+import Cart from './screen/Cart';
+import Profile from './screen/Profile';
+import OrderDetail from './screen/OrderDetail';
+import OrderHistory from './screen/OrderHistory';
+import EditProfile from './screen/EditProfile';
+import ChangePassword from './screen/ChangePassword';
+import ManageProduct from './screen/ManageProduct';
+import EditProduct from './screen/EditProduct';
+import ForgotPassword from './screen/ForgotPassword';
+import Admin from './screen/Admin';
+import AddProduct from './screen/AddProduct';
+const App = () => {
     const Stack = createNativeStackNavigator();
     const Tab = createBottomTabNavigator();
     function BottomTab() {
@@ -111,4 +111,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default NavFn;
+export default App;

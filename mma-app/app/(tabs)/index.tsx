@@ -1,11 +1,11 @@
 import { Image, StyleSheet, Platform } from 'react-native';
 import React from 'react';
 import {CartProvider} from '@/screen/CartContext'
-import NavFn from '@/navigation/NavFn'
+import App from "@/App"
 export default function HomeScreen() {
   return (
     <CartProvider>
-    <NavFn/>
+    <App/>
     </CartProvider>
     
   );

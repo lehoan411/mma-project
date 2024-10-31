@@ -1,0 +1,14 @@
+# Bỏ qua node_modules ở cả client và server
+node_modules/
+server/node_modules/
+server/database.js
+# Bỏ qua thư mục build ở client (nếu có)
+client/build/
+
+# Bỏ qua các file tạm thời khác
+.env
+server/logs/
+server/.env
+server/package-lock.json
+server/logs/
+server/config/database.js
