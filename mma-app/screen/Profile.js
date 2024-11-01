@@ -13,19 +13,15 @@ const Profile = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Hàm lấy token và fetch dữ liệu người dùng
     const fetchUserData = async () => {
         try {
-            const token = await AsyncStorage.getItem('token');
-            if (token) {
-                const response = await axios.get('http://10.33.35.119:9999/api/user', {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setUser(response.data);
+            const storedUser = await AsyncStorage.getItem("user");
+            if (storedUser) {
+                setUser(JSON.parse(storedUser)); // Parse and set user data
             }
         } catch (error) {
-            console.error('Failed to fetch user data:', error);
-            Alert.alert('Error', 'Failed to load user data.');
+            console.error("Failed to fetch user data:", error);
+            Alert.alert("Error", "Failed to load user data.");
         } finally {
             setLoading(false);
         }
@@ -103,12 +99,23 @@ const Profile = () => {
                     <Text style={styles.buttonText}>Edit profile</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('ManageProduct')}
-                    style={styles.button}
-                >
-                    <Text style={styles.buttonText}>Manage product</Text>
-                </TouchableOpacity>
+                {user.role === 1 && (
+                    <>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('ManageProduct')}
+                            style={styles.button}
+                        >
+                            <Text style={styles.buttonText}>Manage product</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Admin')}
+                            style={styles.button}
+                        >
+                            <Text style={styles.buttonText}>Manage Account</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
 
                 <TouchableOpacity
                     onPress={() => navigation.navigate('OrderHistory')}
@@ -130,20 +137,12 @@ const Profile = () => {
                 >
                     <Text style={styles.buttonText}>Logout</Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('Admin')}
-                    style={styles.button}
-                >
-                    <Text style={styles.buttonText}>Manage Account</Text>
-                </TouchableOpacity>
             </View>
         </ScrollView>
     );
 };
 
 export default Profile;
-
 
 const styles = StyleSheet.create({
     container: {

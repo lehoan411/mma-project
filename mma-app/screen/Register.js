@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { 
-    StyleSheet, Text, View, Image, TextInput, 
-    TouchableOpacity, Pressable, Alert, KeyboardAvoidingView 
+import {
+    StyleSheet, Text, View, Image, TextInput,
+    TouchableOpacity, Pressable, Alert, KeyboardAvoidingView
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import Fontisto from "@expo/vector-icons/Fontisto";
@@ -18,7 +18,6 @@ const Register = () => {
 
     const navigation = useNavigation();
 
-    // Hàm validate dữ liệu đầu vào
     const validateInputs = () => {
         if (!username || !email || !password || !confirmPassword || !phone || !address) {
             Alert.alert("Error", "Please fill all the fields");
@@ -37,10 +36,14 @@ const Register = () => {
             Alert.alert("Error", "Passwords do not match");
             return false;
         }
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(phone)) {
+            Alert.alert("Error", "Phone number must be 10 digits");
+            return false;
+        }
         return true;
     };
 
-    // Hàm xử lý đăng ký
     const handleRegister = async () => {
         if (!validateInputs()) return;
 
@@ -58,7 +61,7 @@ const Register = () => {
                 navigation.navigate("Login");
             }
         } catch (error) {
-            Alert.alert("Error", "Registration failed");
+            Alert.alert("Error", error.response?.data?.message || "Registration failed");
             console.error(error);
         }
     };
@@ -144,7 +147,6 @@ const Register = () => {
                 <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
                     <Text style={styles.buttonText}>Register</Text>
                 </TouchableOpacity>
-
                 <Pressable onPress={() => navigation.navigate("Login")}>
                     <Text style={styles.loginRedirect}>Already have an account? Login</Text>
                 </Pressable>
@@ -185,7 +187,6 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 10,
         marginTop: 20,
-        width: 200,
         alignItems: "center",
     },
     buttonText: {

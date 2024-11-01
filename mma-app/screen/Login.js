@@ -22,9 +22,10 @@ const Login = () => {
     }, []);
 
     const handleLogin = async () => {
-        const response = await loginApi(username, password); // Sử dụng API để gửi username và password
+        const response = await loginApi(username, password);
         if (response && response.token) {
-            await AsyncStorage.setItem("token", response.token);
+            const userData = JSON.stringify(response.user);
+            await AsyncStorage.setItem("user", userData); // Save user info
             navigation.navigate("Main");
         } else {
             alert("Invalid login credentials");
