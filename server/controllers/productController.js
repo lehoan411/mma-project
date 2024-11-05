@@ -3,7 +3,7 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const router = express.Router();
 
-router.get("/product", async (req, res, next) => {
+router.get("/get-product", async (req, res, next) => {
     try {
         const products = await Product.find();
         res.status(200).json(products);
@@ -12,7 +12,7 @@ router.get("/product", async (req, res, next) => {
     }
 });
 
-router.get("product/:id", async (req, res, next) => {
+router.get("/get-product/:id", async (req, res, next) => {
     try {
         const {id} = req.params;
         const product = await Product.findById(id);
@@ -22,17 +22,17 @@ router.get("product/:id", async (req, res, next) => {
     }
 });
 
-router.post("product/", async (req, res, next) => {
+router.post("/add-product", async (req, res, next) => {
     try {
         const product = new Product(req.body);
         await product.save();
-        res.status(201).json({message: "Product created successfully"});
+        res.status(201).json({message: "Product added successfully"});
     } catch (error) {
         next(error);
     }
 });
 
-router.put("product/:id", async (req, res, next) => {
+router.put("/update-product/:id", async (req, res, next) => {
     try {
         const {id} = req.params;
         await Product
@@ -44,7 +44,7 @@ router.put("product/:id", async (req, res, next) => {
     }
 });
 
-router.delete("product/:id", async (req, res, next) => {
+router.delete("/delete-product/:id", async (req, res, next) => {
     try {
         const {id} = req.params;
         await Product.findByIdAndDelete(id);
@@ -54,14 +54,23 @@ router.delete("product/:id", async (req, res, next) => {
     }
 });
 
-router.get("/category/:id", async (req, res, next) => {
+router.get("/categories", async (req, res, next) => {
     try {
-        const {id} = req.params;
-        const category = await Category.findById(id);
-        const products = await Product.find({category: category.name});
+        const categories = await Category.find();
+        res.status(200).json(categories);
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get("/category/:categoryId", async (req, res, next) => {
+    try {
+        const { categoryId } = req.params;
+        const products = await Product.find({ catId: categoryId });
         res.status(200).json(products);
     } catch (error) {
         next(error);
     }
 });
+
 module.exports = router;

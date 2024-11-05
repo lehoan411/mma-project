@@ -60,6 +60,7 @@ router.post("/login", async (req, res, next) => {
         // Trả về token cho client
         res.status(200).json({ token,
             user: {
+                userId: account._id,
                 username: account.username,
                 email: account.email,
                 address: account.address,

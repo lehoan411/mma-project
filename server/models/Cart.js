@@ -6,27 +6,10 @@ const cartSchema = new mongoose.Schema({
         ref: 'Account',
         required: true
     },
-    product: [
-        {
-            pid: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Product',
-                required: true
-            },
-            pname: {
-                type: String,
-                required: true
-            },
-            price: {
-                type: Number,
-                required: true
-            },
-            quantity: {
-                type: Number,
-                required: true
-            }
-        }
-    ]
+    product: {
+        type: Array,
+        default: []
+    }
 }, {
     timestamps: true
 });

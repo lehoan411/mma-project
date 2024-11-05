@@ -21,6 +21,7 @@ const ProductList = () => {
         <ScrollView>
             <FlatList
                 data={products}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={renderProduct}
                 contentContainerStyle={styles.list}
                 numColumns={2}

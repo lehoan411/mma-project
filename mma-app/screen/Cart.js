@@ -1,77 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { fetchCart, updateCartItemQuantity, deleteCartItem } from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Cart = () => {
     const navigation = useNavigation();
-    
-    const initialItems = [
-        {
-            id: 1,
-            name: "Apple iPhone 13",
-            price: 25000000,
-            image: "https://via.placeholder.com/80",
-            quantity: 1,
-        },
-        {
-            id: 2,
-            name: "Samsung Galaxy S21",
-            price: 21000000,
-            image: "https://via.placeholder.com/80",
-            quantity: 2,
-        },
-        {
-            id: 3,
-            name: "Sony WH-1000XM4",
-            price: 8000000,
-            image: "https://via.placeholder.com/80",
-            quantity: 1,
-        },
-    ];
+    const [items, setItems] = useState([]);
+    const [userId, setUserId] = useState(null);
 
-    const [items, setItems] = useState(initialItems);
+    // Load userId from AsyncStorage and fetch cart data whenever the screen is focused
+    useFocusEffect(
+        useCallback(() => {
+            const loadUserIdAndCart = async () => {
+                try {
+                    const storedUserId = await AsyncStorage.getItem('userId');
+                    setUserId(storedUserId);
+                    if (storedUserId) {
+                        const cartData = await fetchCart(storedUserId);
+                        setItems(cartData?.product || []);
+                    }
+                } catch (error) {
+                    console.error("Error loading cart data:", error);
+                }
+            };
+            loadUserIdAndCart();
+        }, [])
+    );
 
-    const removeItem = (id) => {
-        const updatedItems = items.filter((item) => item.id !== id);
-        setItems(updatedItems);
-        Alert.alert("Removed", "Item has been removed from the cart.");
+    const updateQuantity = async (productId, newQuantity) => {
+        if (newQuantity < 1) return;
+        try {
+            await updateCartItemQuantity(userId, productId, newQuantity);
+            setItems((prevItems) =>
+                prevItems.map((item) =>
+                    item.pid === productId ? { ...item, quantity: newQuantity } : item
+                )
+            );
+        } catch (error) {
+            console.error("Error updating quantity:", error);
+        }
     };
 
-    const updateQuantity = (id, newQuantity) => {
-        if (newQuantity < 1) return;
-        const updatedItems = items.map((item) =>
-            item.id === id ? { ...item, quantity: newQuantity } : item
-        );
-        setItems(updatedItems);
+    const removeItem = async (productId) => {
+        console.log("Attempting to delete product:", productId, "from cart of user:", userId);
+        try {
+            await deleteCartItem(userId, productId); // Ensure `userId` is correctly passed
+            setItems((prevItems) => prevItems.filter((item) => item.pid !== productId));
+            Alert.alert("Removed", "Item has been removed from the cart.");
+        } catch (error) {
+            console.error("Error removing item:", error);
+        }
     };
 
     const getTotalPrice = () => {
-        return items.reduce((total, item) => total + item.price * item.quantity, 0);
+        return (items || []).reduce((total, item) => total + item.price * item.quantity, 0);
     };
-    
 
     const renderItem = ({ item }) => (
         <View style={styles.cartItem}>
             <Image source={{ uri: item.image }} style={styles.productImage} />
             <View style={styles.productDetails}>
-                <Text style={styles.productName}>{item.name}</Text>
+                <Text style={styles.productName}>{item.pname}</Text>
                 <Text style={styles.productPrice}>{item.price.toLocaleString()} VND</Text>
                 <View style={styles.quantityContainer}>
-                    <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity - 1)} style={styles.quantityButton}>
+                    <TouchableOpacity onPress={() => updateQuantity(item.pid, item.quantity - 1)} style={styles.quantityButton}>
                         <Text style={styles.quantityButtonText}>-</Text>
                     </TouchableOpacity>
                     <Text style={styles.quantityText}>{item.quantity}</Text>
-                    <TouchableOpacity onPress={() => updateQuantity(item.id, item.quantity + 1)} style={styles.quantityButton}>
+                    <TouchableOpacity onPress={() => updateQuantity(item.pid, item.quantity + 1)} style={styles.quantityButton}>
                         <Text style={styles.quantityButtonText}>+</Text>
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => removeItem(item.id)} style={styles.deleteButton}>
+                <TouchableOpacity onPress={() => removeItem(item.pid)} style={styles.deleteButton}>
                     <Text style={styles.deleteButtonText}>Delete</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
+
+    if (!userId) {
+        return (
+            <View style={styles.containerLogin}>
+                <Text style={styles.loginText}>Please log in to access your cart</Text>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => navigation.navigate('Login')}
+                >
+                    <Text style={styles.buttonText}>Login</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -92,7 +113,7 @@ const Cart = () => {
             <FlatList
                 data={items}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item.pid.toString()}
                 ListEmptyComponent={<Text style={styles.emptyText}>Your cart is empty</Text>}
                 contentContainerStyle={{ paddingBottom: 100 }}
             />
@@ -138,6 +159,28 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '600',
         color: 'wheat',
+    },
+    containerLogin: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFEFD5',
+    },
+    loginText: {
+        fontSize: 18,
+        marginBottom: 10,
+        color: '#FF4500',
+    },
+    button: {
+        backgroundColor: '#FFA500',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+    },
+    buttonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '600',
     },
     cartItem: {
         flexDirection: "row",

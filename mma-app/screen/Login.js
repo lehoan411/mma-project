@@ -9,12 +9,14 @@ import { login as loginApi } from "../services/api"; // Đổi tên import để
 const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState(""); // State to store error message
     const navigation = useNavigation();
 
     useEffect(() => {
         const checkLogin = async () => {
             const token = await AsyncStorage.getItem("token");
-            if (token) {
+            const userId = await AsyncStorage.getItem("userId");
+            if (token || userId) {
                 navigation.navigate("Main");
             }
         };
@@ -22,13 +24,24 @@ const Login = () => {
     }, []);
 
     const handleLogin = async () => {
+        // Reset error message
+        setError("");
+
+        // Validate empty fields
+        if (!username || !password) {
+            setError("Username or password are incorrect.");
+            return;
+        }
+
         const response = await loginApi(username, password);
         if (response && response.token) {
-            const userData = JSON.stringify(response.user);
-            await AsyncStorage.setItem("user", userData); // Save user info
+            const { token, user } = response;
+            await AsyncStorage.setItem("token", token); // Lưu token
+            await AsyncStorage.setItem("userId", user.userId); // Lưu userId
+            await AsyncStorage.setItem("user", JSON.stringify(user)); // Save user info
             navigation.navigate("Main");
         } else {
-            alert("Invalid login credentials");
+            setError("Invalid login credentials");
         }
     };
 
@@ -44,7 +57,7 @@ const Login = () => {
             <KeyboardAvoidingView>
                 <View style={{ alignItems: "center" }}>
                     <Text style={styles.loginText}>
-                        Login In to your account
+                        Log In to your account
                     </Text>
                 </View>
 
@@ -55,7 +68,7 @@ const Login = () => {
                             style={{ color: "gray", marginVertical: 10, width: 300 }}
                             placeholder="Enter username"
                             value={username}
-                            onChangeText={(text) => setUsername(text)} // Cập nhật state cho username
+                            onChangeText={(text) => setUsername(text)}
                         />
                     </View>
                 </View>
@@ -68,10 +81,13 @@ const Login = () => {
                             style={{ color: "gray", marginVertical: 10, width: 300 }}
                             placeholder="Enter password"
                             value={password}
-                            onChangeText={(text) => setPassword(text)} // Cập nhật state cho password
+                            onChangeText={(text) => setPassword(text)}
                         />
                     </View>
                 </View>
+
+                {/* Display error message if any */}
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
                 <View style={styles.forgot}>
                     <Text onPress={() => navigation.navigate("ForgotPassword")} style={{ color: "#007FFF", fontWeight: "500" }}>Forgot password?</Text>
@@ -80,14 +96,18 @@ const Login = () => {
                 <View style={{ marginTop: 50 }} />
 
                 <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
-                    {/* Đảm bảo text bên trong TouchableOpacity được bao bởi thành phần Text */}
                     <Text style={{ textAlign: "center", color: "white", fontSize: 16, fontWeight: "bold" }}>
                         Login
                     </Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity onPress={() => navigation.navigate("Main")} style={styles.loginButton}>
+                    <Text style={{ textAlign: "center", color: "white", fontSize: 16, fontWeight: "bold" }}>
+                        Home
+                    </Text>
+                </TouchableOpacity>
+
                 <Pressable onPress={() => navigation.navigate("Register")} style={{ marginTop: 15 }}>
-                    {/* Đảm bảo text bên trong Pressable được bao bởi thành phần Text */}
                     <Text style={{ color: "grey", textAlign: "center", fontSize: 16 }}>
                         Don't have an account? Sign Up
                     </Text>
@@ -95,7 +115,7 @@ const Login = () => {
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -113,7 +133,6 @@ const styles = StyleSheet.create({
     formLogin: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 5,
         paddingVertical: 5,
         borderRadius: 15,
         marginTop: 30,
@@ -132,6 +151,12 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         marginLeft: 'auto',
         marginRight: 'auto',
+    },
+    errorText: {
+        color: "red",
+        textAlign: "center",
+        marginTop: 10,
+        fontSize: 14,
     },
 });
 

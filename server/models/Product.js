@@ -25,12 +25,10 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    image:[
-        {
-          imagineUrl: { type: String, required: true },
-          imagineName: { type: String, required: true },
-        }
-      ],
+    image:{ 
+        type: String, 
+        required: true 
+    },
     catId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',

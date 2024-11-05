@@ -35,7 +35,7 @@ app.get("/", async (req, res, next) => {
 app.use("/auth", accountController);
 app.use("/cart", cartController);
 app.use("/feedback", feedBackController);
-app.use("/manage", productController);
+app.use("/product", productController);
 app.use("/orderdetail", orderDetailController);
 
 

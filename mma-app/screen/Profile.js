@@ -4,7 +4,7 @@ import {
     TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator
 } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
@@ -14,6 +14,7 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
 
     const fetchUserData = async () => {
+        setLoading(true); // Set loading to true for re-rendering purposes
         try {
             const storedUser = await AsyncStorage.getItem("user");
             if (storedUser) {
@@ -27,16 +28,18 @@ const Profile = () => {
         }
     };
 
-    useEffect(() => {
-        fetchUserData();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchUserData(); // Re-fetch user data every time the screen comes into focus
+        }, [])
+    );
 
     const handleLogout = async () => {
         try {
-            await AsyncStorage.removeItem('token');
+            await AsyncStorage.clear(); // Clears all data in Async Storage
             navigation.reset({
                 index: 0,
-                routes: [{ name: 'Login' }],
+                routes: [{ name: 'Main' }],
             });
         } catch (error) {
             Alert.alert('Error', 'Failed to logout. Please try again.');
@@ -49,10 +52,10 @@ const Profile = () => {
 
     if (!user) {
         return (
-            <View style={styles.container}>
+            <View style={styles.containerLogin}>
                 <Text style={styles.loginText}>Please log in to access your profile</Text>
                 <TouchableOpacity
-                    style={styles.loginButton}
+                    style={styles.button}
                     onPress={() => navigation.navigate('Login')}
                 >
                     <Text style={styles.buttonText}>Login</Text>
@@ -63,6 +66,7 @@ const Profile = () => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
+            {/* Profile UI */}
             <View style={styles.search}>
                 <Pressable style={styles.pressSearch}>
                     <MaterialIcons name="search" size={24} color="#FFF" />
@@ -142,6 +146,8 @@ const Profile = () => {
     );
 };
 
+
+
 export default Profile;
 
 const styles = StyleSheet.create({
@@ -150,12 +156,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#FFEFD5',
     },
+    containerLogin: {
+        flexGrow: 1,
+        alignItems: 'center',
+        backgroundColor: '#FFEFD5',
+        justifyContent: 'center',
+    },
     search: {
         paddingTop: 25,
         backgroundColor: '#FFA500',
         padding: 10,
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    loginText: {
+        fontSize: 18,
+        color: '#FF6347',
+        textAlign: 'center',
+        marginBottom: 20,
+        fontWeight: 'bold',
     },
     pressSearch: {
         flexDirection: 'row',

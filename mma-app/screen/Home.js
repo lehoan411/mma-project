@@ -1,49 +1,94 @@
-import { StyleSheet, Text, Dimensions, View, Platform, SafeAreaView, Image, Pressable, ScrollView, TextInput } from "react-native";
-import React from 'react';
+import { StyleSheet, Text, Dimensions, View, SafeAreaView, Image, Pressable, ScrollView, TextInput } from "react-native";
+import React, { useState, useEffect } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Carousel from 'react-native-reanimated-carousel';
 import Product from "./Product";
 import { useNavigation } from "@react-navigation/native";
+import { fetchProducts, fetchCategories } from '../services/api';
+import axios from "axios";
 
+// const API_BASE_URL = "http://192.168.1.51:9999"; // Sửa URL theo địa chỉ IP của server
+const API_BASE_URL = "http://10.33.35.119:9999";
 const Home = () => {
     const navigation = useNavigation();
     const width = Dimensions.get('window').width;
-
-    // Sample products array
-    const products = [
-        { id: '1', name: 'Product 1', price: '$100', description: 'Description for product 1', image: 'https://picsum.photos/700' },
-        { id: '2', name: 'Product 2', price: '$120', description: 'Description for product 2', image: 'https://picsum.photos/701' },
-        { id: '3', name: 'Product 3', price: '$150', description: 'Description for product 3', image: 'https://picsum.photos/702' },
-        { id: '4', name: 'Product 4', price: '$180', description: 'Description for product 4', image: 'https://picsum.photos/703' },
-        { id: '5', name: 'Product 5', price: '$180', description: 'Description for product 5', image: 'https://picsum.photos/704' },
-        { id: '6', name: 'Product 6', price: '$180', description: 'Description for product 6', image: 'https://picsum.photos/705' },
-    ];
-
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [searchQuery, setSearchQuery] = useState(""); // Thêm state lưu giá trị tìm kiếm
     const images = [
-        'https://via.placeholder.com/600x300.png?text=Image+1',
-        'https://via.placeholder.com/600x300.png?text=Image+2',
-        'https://via.placeholder.com/600x300.png?text=Image+3',
-        'https://via.placeholder.com/600x300.png?text=Image+4',
+        'https://lh5.googleusercontent.com/EpcuqPabcy-o-VRJ4HOuYS4ihbGn-n__6BFTOXiml2_tyJH9tUxgqPwJ_Do9HaCSyFxUdwzFr7AKM7cq9Eqv9lfy4u1hXkIEZCfxF2SjmtzvhdmefZwg2eZeWpz_z5eA7-2UwSI',
+        'https://www.shopbase.com/blog/wp-content/uploads/2022/02/dropshipping-phu-kien-dien-thoai-banner.jpg',
+        'https://www.uplevo.com/blog/wp-content/uploads/2019/07/kinh-doanh-cua-hang-phu-kien-dien-thoai.jpg',
+        'https://bak.com.vn/wp-content/uploads/2023/05/BAK-Dia-chi-cung-cap-linh-kien-dien-thoai-gia-si-TP-HCM.jpg',
     ];
+
+    useEffect(() => {
+        const fetchCategoriesData = async () => {
+            try {
+                const categoriesData = await fetchCategories();
+                setCategories(categoriesData);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+
+        const fetchProductsData = async () => {
+            try {
+                const productsData = await fetchProducts();
+                setProducts(productsData);
+                setFilteredProducts(productsData); // Hiển thị tất cả sản phẩm lúc đầu
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        };
+
+        fetchCategoriesData();
+        fetchProductsData();
+    }, []);
+
+    const handleCategoryPress = async (categoryId) => {
+        setSelectedCategory(categoryId);
+        try {
+            if (categoryId) {
+                const response = await axios.get(`${API_BASE_URL}/product/category/${categoryId}`);
+                setFilteredProducts(response.data);
+            } else {
+                setFilteredProducts(products);
+            }
+        } catch (error) {
+            console.error("Error filtering products:", error);
+        }
+    };
+
+    const handleSearch = () => {
+        const filtered = products.filter((product) =>
+            product.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredProducts(filtered);
+    };
 
     return (
-        <SafeAreaView
-            style={{
-                flex: 1,
-                backgroundColor: '#FFEFD5',
-            }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFEFD5' }}>
             <ScrollView>
                 {/* Search Bar */}
                 <View style={styles.search}>
-                    <Pressable style={styles.pressSearch}>
-                        <MaterialIcons name="search" size={24} color="#FFF" />
+                    <View style={styles.pressSearch}>
                         <TextInput
                             placeholder="Search product"
                             placeholderTextColor="#FFE4B5"
-                            style={{ color: '#FFF' }}
+                            style={{ color: '#FFF', flex: 1 }}
+                            value={searchQuery} // Hiển thị giá trị tìm kiếm
+                            onChangeText={setSearchQuery} // Cập nhật giá trị tìm kiếm
                         />
+                        <Pressable onPress={handleSearch}>
+                            <MaterialIcons name="search" size={24} color="#FFF" />
+                        </Pressable>
+                    </View>
+                    <Pressable onPress={() => navigation.navigate("Home")}>
+                        <Text style={{ fontSize: 20, fontWeight: '500', color: "wheat" }}>ShopLink</Text>
                     </Pressable>
-                    <Pressable onPress={() => navigation.navigate("Home")}><Text style={{ fontSize: 20, fontWeight: '500', color: "wheat" }}>ShopLink</Text></Pressable>
                 </View>
 
                 {/* Carousel */}
@@ -67,31 +112,15 @@ const Home = () => {
                     />
                 </View>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {images.map((item, index) => (
-                        <Pressable
-                            key={index}
-                            style={{
-                                margin: 10,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Image
-                                style={{ width: 50, height: 50, resizeMode: "contain" }}
-                                source={{ uri: item }}
-                            />
-
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    fontSize: 12,
-                                    fontWeight: "500",
-                                    marginTop: 5,
-                                }}
-                            >
-                                {item?.name}
-                            </Text>
+                {/* Categories */}
+                <Text style={styles.categoriesTitle}>Categories</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryList}>
+                    <Pressable onPress={() => handleCategoryPress(null)} style={styles.categoryItem}>
+                        <Text style={[styles.categoryText, selectedCategory === null && styles.categoryTextSelected]}>All</Text>
+                    </Pressable>
+                    {categories.map((category) => (
+                        <Pressable key={category._id} onPress={() => handleCategoryPress(category._id)} style={styles.categoryItem}>
+                            <Text style={[styles.categoryText, selectedCategory === category._id && styles.categoryTextSelected]}>{category.name}</Text>
                         </Pressable>
                     ))}
                 </ScrollView>
@@ -99,12 +128,18 @@ const Home = () => {
                 {/* Product List */}
                 <Text style={styles.allProductsTitle}>All Products</Text>
                 <View style={styles.productList}>
-                    {products.map((item) => (
-                        <Product
-                            key={item.id}
-                            item={item}
-                            onPress={() => navigation.navigate('Detail', { product: item })} // Pass product data
-                        />
+                    {filteredProducts.map((item) => (
+                        <View style={styles.productWrapper} key={item._id}>
+                            <Product
+                                key={item._id}
+                                item={{
+                                    ...item,
+                                    image: item.image || 'https://via.placeholder.com/150',
+                                    price: `${item.price.toLocaleString()}`
+                                }}
+                                onPress={() => navigation.navigate('Detail', { productId: item._id })}
+                            />
+                        </View>
                     ))}
                 </View>
             </ScrollView>
@@ -117,18 +152,17 @@ export default Home;
 const styles = StyleSheet.create({
     search: {
         paddingTop: 25,
-        backgroundColor: '#FFA500', // Màu cam
+        backgroundColor: '#FFA500',
         padding: 10,
         flexDirection: 'row',
         alignItems: 'center',
     },
     pressSearch: {
         flexDirection: 'row',
-        backgroundColor: '#FF8C00', // Cam đậm
+        backgroundColor: '#FF8C00',
         alignItems: 'center',
         borderRadius: 10,
         marginHorizontal: 7,
-        gap: 10,
         height: 38,
         flex: 1,
         paddingHorizontal: 10,
@@ -138,6 +172,30 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         justifyContent: 'center',
     },
+    categoriesTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+    },
+    categoryList: {
+        flexDirection: 'row',
+        paddingVertical: 10,
+        paddingHorizontal: 5,
+    },
+    categoryItem: {
+        marginHorizontal: 10,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    categoryText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    categoryTextSelected: {
+        fontWeight: 'bold',
+        color: '#FFA500',
+    },
     allProductsTitle: {
         padding: 10,
         fontSize: 18,
@@ -145,9 +203,12 @@ const styles = StyleSheet.create({
     },
     productList: {
         flexDirection: "row",
-        alignItems: "center",
-        flexWrap: 'wrap',
-        justifyContent: 'space-evenly',
-
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        paddingHorizontal: 10,
     },
+    productWrapper: {
+        width: "48%",
+        marginBottom: 15,
+    }
 });
