@@ -7,8 +7,8 @@ import { useNavigation } from "@react-navigation/native";
 import { fetchProducts, fetchCategories } from '../services/api';
 import axios from "axios";
 
-// const API_BASE_URL = "http://192.168.1.51:9999"; // Sửa URL theo địa chỉ IP của server
-const API_BASE_URL = "http://10.33.35.119:9999";
+const API_BASE_URL = "http://192.168.1.51:9999"; // Sửa URL theo địa chỉ IP của server
+// const API_BASE_URL = "http://10.33.35.119:9999";
 const Home = () => {
     const navigation = useNavigation();
     const width = Dimensions.get('window').width;

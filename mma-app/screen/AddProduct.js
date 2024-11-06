@@ -1,62 +1,63 @@
-import React, { useState } from 'react';
-import { 
-    View, Text, TextInput, TouchableOpacity, Image, 
-    StyleSheet, Modal, Button, ScrollView 
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from "@react-navigation/native";
-const AddProduct = ({ isVisible, onClose, onAdd }) => {
+import axios from "axios";
+import { fetchCategories, addProduct } from '../services/api';
+
+const AddProduct = ({ isVisible }) => {
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [quantity, setQuantity] = useState('');
     const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('all');
+    const [category, setCategory] = useState('');
     const [imageUri, setImageUri] = useState('');
+    const [categories, setCategories] = useState([]);
     const navigation = useNavigation();
 
-    // Chọn ảnh từ thư viện
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
+    // Fetch categories from the API on component mount
+    useEffect(() => {
+        const getCategories = async () => {
+            try {
+                const data = await fetchCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        getCategories();
+    }, []);
 
-        if (!result.canceled) {
-            setImageUri(result.assets[0].uri);
-        }
-    };
-
-    const handleAdd = () => {
-        const newProduct = {
+    // Handle adding a product
+    const handleAdd = async () => {
+        const productData = {
             name,
             price: parseFloat(price),
             quantity: parseInt(quantity),
             description,
-            category,
             image: imageUri,
+            catId: category,
         };
-        onAdd(newProduct);
+
+        try {
+            await addProduct(productData);
+            alert("Product added successfully!");
+            navigation.navigate("ManageProduct"); // Go back to product management
+        } catch (error) {
+            console.error("Error adding product:", error);
+            alert("Error adding product. Please try again.");
+        }
     };
 
     return (
         <Modal visible={isVisible} animationType="slide">
             <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.imageContainer}>
-                    {imageUri ? (
-                        <Image source={{ uri: imageUri }} style={styles.productImage} />
-                    ) : (
-                        <View style={styles.placeholder}>
-                            <Text>No Image</Text>
-                        </View>
-                    )}
-                    <TouchableOpacity style={styles.chooseButton} onPress={pickImage}>
-                        <Text style={styles.chooseButtonText}>Choose Image</Text>
-                    </TouchableOpacity>
-                </View>
-
+                <TextInput
+                    style={styles.input}
+                    placeholder="Image URL"
+                    value={imageUri}
+                    onChangeText={setImageUri}
+                />
                 <TextInput
                     style={styles.input}
                     placeholder="Product Name"
@@ -85,15 +86,17 @@ const AddProduct = ({ isVisible, onClose, onAdd }) => {
                     multiline
                 />
 
+
                 <View style={styles.pickerContainer}>
                     <Picker
                         selectedValue={category}
                         onValueChange={(itemValue) => setCategory(itemValue)}
                         style={styles.picker}
                     >
-                        <Picker.Item label="All" value="all" />
-                        <Picker.Item label="Category 1" value="category1" />
-                        <Picker.Item label="Category 2" value="category2" />
+                        <Picker.Item label="Select Category" value="" />
+                        {categories.map((cat) => (
+                            <Picker.Item key={cat._id} label={cat.name} value={cat._id} />
+                        ))}
                     </Picker>
                 </View>
 
@@ -110,6 +113,7 @@ const AddProduct = ({ isVisible, onClose, onAdd }) => {
 };
 
 export default AddProduct;
+
 
 const styles = StyleSheet.create({
     container: {
@@ -175,7 +179,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         alignItems: 'center',
         marginTop: 10,
-    }, 
+    },
     addButtonText: {
         color: '#fff',
         fontSize: 18,

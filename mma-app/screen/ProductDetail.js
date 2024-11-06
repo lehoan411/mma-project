@@ -17,8 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { addToCart } from "../services/api"; // Giả sử bạn đã import `addToCart` từ file api.js
 
-// const API_BASE_URL = "http://192.168.1.51:9999"; // Update with your actual backend URL
-const API_BASE_URL = "http://10.33.35.119:9999";
+const API_BASE_URL = "http://192.168.1.51:9999"; // Update with your actual backend URL
+// const API_BASE_URL = "http://10.33.35.119:9999";
 const ProductDetail = () => {
     const route = useRoute();
     const navigation = useNavigation();

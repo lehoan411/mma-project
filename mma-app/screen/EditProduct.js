@@ -1,62 +1,90 @@
-import React, { useState } from 'react';
-import { 
-    View, Text, TextInput, TouchableOpacity, Image, 
-    StyleSheet, Modal, Button, ScrollView 
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from "@react-navigation/native";
-const EditProduct = ({ isVisible, product, onClose, onSave }) => {
-    const [name, setName] = useState(product?.name || '');
-    const [price, setPrice] = useState(product?.price?.toString() || '');
-    const [quantity, setQuantity] = useState(product?.quantity?.toString() || '');
-    const [description, setDescription] = useState(product?.description || '');
-    const [category, setCategory] = useState(product?.category || 'all');
-    const [imageUri, setImageUri] = useState(product?.image || '');
-    const navigation = useNavigation();
-    // Chọn ảnh từ thư viện
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
+import { useNavigation, useRoute } from "@react-navigation/native";
+import axios from 'axios';
+import { fetchCategories } from '../services/api';
 
-        if (!result.canceled) {
-            setImageUri(result.assets[0].uri);
+const EditProduct = ({ isVisible }) => {
+    const navigation = useNavigation();
+    const route = useRoute();
+    const { productId } = route.params;
+
+    const [product, setProduct] = useState(null);
+    const [name, setName] = useState('');
+    const [price, setPrice] = useState('');
+    const [quantity, setQuantity] = useState('');
+    const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('all');
+    const [imageUri, setImageUri] = useState('');
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            try {
+                const response = await axios.get(`http://192.168.1.51:9999/product/get-product/${productId}`);
+                const productData = response.data;
+                setProduct(productData);
+                setName(productData.name);
+                setPrice(productData.price.toString());
+                setQuantity(productData.quantity.toString());
+                setDescription(productData.description);
+                setCategory(productData.catId);
+                setImageUri(productData.image);
+            } catch (error) {
+                console.error("Error fetching product details:", error);
+            }
+        };
+
+        const loadCategories = async () => {
+            const categoriesList = await fetchCategories();
+            setCategories(categoriesList);
+        };
+
+        fetchProductDetails();
+        loadCategories();
+    }, [productId]);
+
+    const handleSave = async () => {
+        try {
+            await axios.put(`http://192.168.1.51:9999/product/update-product/${productId}`, {
+                name,
+                price: parseFloat(price),
+                quantity: parseInt(quantity, 10),
+                description,
+                catId: category,
+                image: imageUri,
+            });
+            Alert.alert("Success", "Product updated successfully");
+            navigation.navigate("ManageProduct", { reload: true });
+        } catch (error) {
+            Alert.alert("Error", "Failed to update product");
+            console.error("Error updating product:", error);
         }
     };
 
-    const handleSave = () => {
-        const updatedProduct = {
-            ...product,
-            name,
-            price: parseFloat(price),
-            quantity: parseInt(quantity),
-            description,
-            category,
-            image: imageUri,
-        };
-        onSave(updatedProduct);
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`http://192.168.1.51:9999/product/delete-product/${productId}`);
+            Alert.alert("Success", "Product deleted successfully");
+            navigation.navigate("ManageProduct", { reload: true });
+        } catch (error) {
+            Alert.alert("Error", "Failed to delete product");
+            console.error("Error deleting product:", error);
+        }
     };
 
     return (
         <Modal visible={isVisible} animationType="slide">
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.imageContainer}>
-                    {imageUri ? (
-                        <Image source={{ uri: imageUri }} style={styles.productImage} />
-                    ) : (
-                        <View style={styles.placeholder}>
-                            <Text>No Image</Text>
-                        </View>
-                    )}
-                    <TouchableOpacity style={styles.chooseButton} onPress={pickImage}>
-                        <Text style={styles.chooseButtonText}>Choose Image</Text>
-                    </TouchableOpacity>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Image URL"
+                        value={imageUri}
+                        onChangeText={setImageUri}
+                    />
                 </View>
-
                 <TextInput
                     style={styles.input}
                     placeholder="Product Name"
@@ -84,16 +112,15 @@ const EditProduct = ({ isVisible, product, onClose, onSave }) => {
                     onChangeText={setDescription}
                     multiline
                 />
-
                 <View style={styles.pickerContainer}>
                     <Picker
                         selectedValue={category}
                         onValueChange={(itemValue) => setCategory(itemValue)}
                         style={styles.picker}
                     >
-                        <Picker.Item label="All" value="all" />
-                        <Picker.Item label="Category 1" value="category1" />
-                        <Picker.Item label="Category 2" value="category2" />
+                        {categories.map((cat) => (
+                            <Picker.Item key={cat._id} label={cat.name} value={cat._id} />
+                        ))}
                     </Picker>
                 </View>
 
@@ -101,7 +128,7 @@ const EditProduct = ({ isVisible, product, onClose, onSave }) => {
                     <Text style={styles.saveButtonText}>Edit Product</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.deleteButton} >
+                <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
                     <Text style={styles.saveButtonText}>Delete Product</Text>
                 </TouchableOpacity>
 

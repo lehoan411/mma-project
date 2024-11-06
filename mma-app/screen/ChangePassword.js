@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updatePassword } from '../services/api'; // Assume this is your API call for updating the password
 
 const ChangePassword = () => {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -8,7 +10,7 @@ const ChangePassword = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const navigation = useNavigation();
 
-    const handlePasswordChange = () => {
+    const handlePasswordChange = async () => {
         if (newPassword !== confirmPassword) {
             Alert.alert('Error', 'New passwords do not match.');
             return;
@@ -17,15 +19,33 @@ const ChangePassword = () => {
             Alert.alert('Error', 'Please fill out all fields.');
             return;
         }
-        // Add your password change logic here (API call)
-        Alert.alert('Success', 'Password changed successfully.');
-        navigation.navigate("Home"); // Navigate back after successful change
+
+        try {
+            // Get userId from AsyncStorage
+            const userId = await AsyncStorage.getItem('userId');
+            if (!userId) {
+                Alert.alert('Error', 'User not found');
+                return;
+            }
+
+            // Call the API to update the password
+            const result = await updatePassword(userId, currentPassword, newPassword);
+
+            if (result.success) {
+                Alert.alert('Success', 'Password changed successfully.');
+                navigation.navigate("Home");
+            } else {
+                Alert.alert('Error', result.message || 'Failed to change password');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'An error occurred. Please try again.');
+        }
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Change Password</Text>
-            
+
             <Text style={styles.label}>Current Password</Text>
             <TextInput
                 style={styles.input}

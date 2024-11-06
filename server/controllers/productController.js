@@ -26,9 +26,10 @@ router.post("/add-product", async (req, res, next) => {
     try {
         const product = new Product(req.body);
         await product.save();
-        res.status(201).json({message: "Product added successfully"});
+        res.status(201).json({ message: "Product added successfully" });
     } catch (error) {
-        next(error);
+        console.error("Error saving product:", error);
+        res.status(500).json({ message: "Failed to add product" });
     }
 });
 

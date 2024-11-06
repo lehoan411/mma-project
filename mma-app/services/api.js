@@ -1,6 +1,6 @@
 import axios from "axios";
-// const API_BASE_URL = "http://192.168.1.51:9999";
-const API_BASE_URL = "http://10.33.35.119:9999";
+const API_BASE_URL = "http://192.168.1.51:9999";
+// const API_BASE_URL = "http://10.33.35.119:9999";
 
 export const login = async (username, password) => {
     try {
@@ -21,6 +21,30 @@ export const register = async (data) => {
     } catch (error) {
         console.error("Registration error:", error);
         throw error;
+    }
+};
+
+export const updateProfile = async (userId, data) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/auth/update-profile/${userId}`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        throw error;
+    }
+};
+
+export const updatePassword = async (userId, currentPassword, newPassword) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/auth/change-password/${userId}`, {
+            currentPassword,
+            newPassword
+        });
+
+        return response.data;  // Contains success message or error message
+    } catch (error) {
+        console.error("Error changing password:", error);
+        return { success: false, message: "An error occurred while changing the password" };
     }
 };
 
@@ -96,3 +120,15 @@ export const deleteCartItem = async (cartId, productId) => {
         throw error;
     }
 };
+
+export const addProduct = async (productData) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/product/add-product`, productData);
+        return response.data;
+    } catch (error) {
+        console.error("Error adding product:", error);
+        throw error;
+    }
+};
+
+

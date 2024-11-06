@@ -1,19 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, TouchableOpacity, StyleSheet, FlatList, Image } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect  } from "@react-navigation/native";
+import { fetchProducts } from '../services/api'; // Import hàm fetchProducts từ file api.js
+
 const ManageProduct = () => {
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('all');
+    const [products, setProducts] = useState([]); // Tạo state products để lưu danh sách sản phẩm
     const navigation = useNavigation();
-    const products = [
-        { id: '1', name: 'Product 1', quantity: 10, status: 'In Stock', image: 'https://via.placeholder.com/50' },
-        { id: '2', name: 'Product 2', quantity: 5, status: 'Low Stock', image: 'https://via.placeholder.com/50' },
-        { id: '3', name: 'Product 3', quantity: 15, status: 'In Stock', image: 'https://via.placeholder.com/50' },
-        { id: '4', name: 'Product 4', quantity: 0, status: 'Out of Stock', image: 'https://via.placeholder.com/50' },
-        { id: '5', name: 'Product 5', quantity: 8, status: 'In Stock', image: 'https://via.placeholder.com/50' },
-    ];
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadProducts = async () => {
+                try {
+                    const productList = await fetchProducts();
+                    setProducts(productList);
+                } catch (error) {
+                    console.error("Error loading products:", error);
+                }
+            };
+    
+            loadProducts();
+        }, [])
+    );
 
     const renderProductItem = ({ item }) => (
         <View style={styles.productRow}>
@@ -22,9 +33,9 @@ const ManageProduct = () => {
             </View>
             <Text style={styles.productText}>{item.name}</Text>
             <Text style={styles.productText}>{item.quantity}</Text>
-            <Text style={styles.productText}>{item.status}</Text>
+            <Text style={styles.productText}>{item.status ? "In Stock" : "Out of Stock"}</Text>
             <View style={styles.columnActions}>
-                <TouchableOpacity onPress={() => navigation.navigate("EditProduct")} style={styles.iconButton}>
+                <TouchableOpacity onPress={() => navigation.navigate("EditProduct", { productId: item._id })} style={styles.iconButton}>
                     <MaterialIcons name="settings" size={24} color="#FFD700" />
                 </TouchableOpacity>
             </View>
@@ -41,24 +52,17 @@ const ManageProduct = () => {
                         placeholder="Search product"
                         placeholderTextColor="#FFE4B5"
                         style={{ color: '#FFF' }}
+                        value={search}
+                        onChangeText={setSearch}
                     />
                 </Pressable>
                 <Pressable onPress={() => navigation.navigate("Home")}>
-                    <Text style={{fontSize: 20, fontWeight: '500', color: "wheat"}}>ShopLink</Text>
+                    <Text style={{ fontSize: 20, fontWeight: '500', color: "wheat" }}>ShopLink</Text>
                 </Pressable>
             </View>
 
-            {/* Category Filter */}
-            <View style={styles.filterContainer}>
-                <Picker
-                    selectedValue={category}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setCategory(itemValue)}
-                >
-                    <Picker.Item label="Category all" value="all" />
-                    <Picker.Item label="Category 1" value="category1" />
-                    <Picker.Item label="Category 2" value="category2" />
-                </Picker>
+            <View style={styles.manageTitle}>
+                <Text style={{ fontSize: 30, fontWeight: '500' }}>Manage Product</Text>
             </View>
 
             {/* Product List Header */}
@@ -78,7 +82,7 @@ const ManageProduct = () => {
             <FlatList
                 data={products}
                 renderItem={renderProductItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id}
                 style={styles.productList}
             />
 
@@ -127,6 +131,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 10,
+    },
+    manageTitle: {
+        padding: 10,
+        marginTop: 10,
+        alignItems: 'center',
     },
     productHeader: {
         flexDirection: 'row',

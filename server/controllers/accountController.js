@@ -73,4 +73,51 @@ router.post("/login", async (req, res, next) => {
     }
 });
 
+router.put("/update-profile/:id", async (req, res) => {
+    const userId = req.params.id;
+    const { username, email, address, mobile } = req.body;
+
+    try {
+        const updatedUser = await Account.findByIdAndUpdate(
+            userId,
+            { username, email, address, mobile },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ user: updatedUser, message: "Profile updated successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+router.put("/change-password/:id", async (req, res) => {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+        // Find the user by ID
+        const user = await Account.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if the current password matches
+        if (user.password !== currentPassword) {
+            return res.status(400).json({ message: "Current password is incorrect" });
+        }
+
+        // Update the password
+        user.password = newPassword;
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 module.exports = router;
