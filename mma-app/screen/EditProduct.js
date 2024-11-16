@@ -22,7 +22,7 @@ const EditProduct = ({ isVisible }) => {
     useEffect(() => {
         const fetchProductDetails = async () => {
             try {
-                const response = await axios.get(`http://192.168.1.51:9999/product/get-product/${productId}`);
+                const response = await axios.get(`http://10.33.35.119:9999/product/get-product/${productId}`);
                 const productData = response.data;
                 setProduct(productData);
                 setName(productData.name);
@@ -47,7 +47,7 @@ const EditProduct = ({ isVisible }) => {
 
     const handleSave = async () => {
         try {
-            await axios.put(`http://192.168.1.51:9999/product/update-product/${productId}`, {
+            await axios.put(`http://10.33.35.119:9999/product/update-product/${productId}`, {
                 name,
                 price: parseFloat(price),
                 quantity: parseInt(quantity, 10),
@@ -65,7 +65,7 @@ const EditProduct = ({ isVisible }) => {
 
     const handleDelete = async () => {
         try {
-            await axios.delete(`http://192.168.1.51:9999/product/delete-product/${productId}`);
+            await axios.delete(`http://10.33.35.119:9999/product/delete-product/${productId}`);
             Alert.alert("Success", "Product deleted successfully");
             navigation.navigate("ManageProduct", { reload: true });
         } catch (error) {

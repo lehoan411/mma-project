@@ -49,8 +49,8 @@ const Login = () => {
         <SafeAreaView style={styles.container}>
             <View>
                 <Image
-                    style={{ width: 150, height: 100 }}
-                    source={{ uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDbzc545h-aXan19MbkEgA5h4FN_A5BSJRqQ&s" }}
+                    style={{ width: 150, height: 150 }}
+                    source={{ uri: "https://png.pngtree.com/png-vector/20240715/ourmid/pngtree-cell-phone-accessories-psd-png-image_13095675.png" }}
                 />
             </View>
 
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     loginText: {
-        fontSize: 17,
+        fontSize: 30,
         fontWeight: "bold",
         marginTop: 12,
         color: "#041E42",
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     loginButton: {
+        margin: 10,
         width: 200,
         padding: 15,
         backgroundColor: "orange",

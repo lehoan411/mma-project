@@ -17,8 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { addToCart } from "../services/api"; // Giả sử bạn đã import `addToCart` từ file api.js
 
-const API_BASE_URL = "http://192.168.1.51:9999"; // Update with your actual backend URL
-// const API_BASE_URL = "http://10.33.35.119:9999";
+// const API_BASE_URL = "http://192.168.1.51:9999"; // Update with your actual backend URL
+const API_BASE_URL = "http://10.33.35.119:9999";
 const ProductDetail = () => {
     const route = useRoute();
     const navigation = useNavigation();
@@ -79,15 +79,10 @@ const ProductDetail = () => {
         <View style={{ flex: 1, backgroundColor: "#FFEFD5" }}>
             {/* Search Bar */}
             <View style={styles.search}>
-                <Pressable style={styles.pressSearch}>
-                    <MaterialIcons name="search" size={24} color="#FFF" />
-                    <TextInput
-                        placeholder="Search product"
-                        placeholderTextColor="#FFE4B5"
-                        style={{ color: "#FFF" }}
-                    />
-                </Pressable>
-                <Pressable onPress={() => navigation.navigate("Home")}>
+                <View style={{}}>
+                    <Text style={{ fontSize: 20, fontWeight: "500", color: "black" }}>Product Detail</Text>
+                </View>
+                <Pressable onPress={() => navigation.navigate("Home")} style={{}}>
                     <Text style={{ fontSize: 20, fontWeight: "500", color: "wheat" }}>ShopLink</Text>
                 </Pressable>
             </View>
@@ -141,6 +136,7 @@ const styles = StyleSheet.create({
         padding: 10,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between", 
     },
     pressSearch: {
         flexDirection: "row",

@@ -69,8 +69,8 @@ const Register = () => {
     return (
         <View style={styles.container}>
             <Image
-                style={{ width: 150, height: 100 }}
-                source={{ uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDbzc545h-aXan19MbkEgA5h4FN_A5BSJRqQ&s" }}
+                style={{ width: 150, height: 150 }}
+                source={{ uri: "https://png.pngtree.com/png-vector/20240715/ourmid/pngtree-cell-phone-accessories-psd-png-image_13095675.png" }}
             />
             <KeyboardAvoidingView>
                 <Text style={styles.loginText}>Register to your account</Text>

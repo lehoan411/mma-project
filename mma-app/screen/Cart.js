@@ -97,16 +97,11 @@ const Cart = () => {
     return (
         <View style={styles.container}>
             <View style={styles.search}>
-                <Pressable style={styles.pressSearch}>
-                    <MaterialIcons name="search" size={24} color="#FFF" />
-                    <TextInput
-                        placeholder="Search product"
-                        placeholderTextColor="#FFE4B5"
-                        style={{ color: '#FFF' }}
-                    />
-                </Pressable>
-                <Pressable onPress={() => navigation.navigate("Home")}>
-                    <Text style={styles.shopLinkText}>ShopLink</Text>
+                <View style={{}}>
+                    <Text style={{ fontSize: 20, fontWeight: "500", color: "black" }}>Product Detail</Text>
+                </View>
+                <Pressable onPress={() => navigation.navigate("Home")} style={{}}>
+                    <Text style={{ fontSize: 20, fontWeight: "500", color: "wheat" }}>ShopLink</Text>
                 </Pressable>
             </View>
 
@@ -144,6 +139,7 @@ const styles = StyleSheet.create({
         padding: 10,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: "space-between", 
     },
     pressSearch: {
         flexDirection: 'row',
